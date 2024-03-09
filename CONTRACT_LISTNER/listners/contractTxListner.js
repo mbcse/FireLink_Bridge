@@ -1,4 +1,5 @@
 const Web3 = require('web3');
+const { runAddressValidity } = require('./transactionChecker.js'); 
 
 let blockNumber = 23473761
 const waitTime = 10 // seconds
@@ -15,32 +16,37 @@ const networkName = chainData[chainId].name
 const exploreLink = chainData[chainId].exploreLink
 console.log(`Contract Listner Started for contract ${contractAddress} on chain ${chainId}`)
 
-while(true){
-    console.log(`Checking block ${blockNumber}`)
-    const getBlock = await web3.eth.getBlock(blockNumber)
-    const txs = getBlock.transactions
-    // console.log(getBlock)
-    for(let i = 0; i < txs.length; i++){
-        const tx = await web3.eth.getTransaction(txs[i])
-        // console.log(tx)
-        if(tx.to === contractAddress){
-            const txReceipt = await web3.eth.getTransactionReceipt(txs[i])
-            console.log(txReceipt)
-            console.log(`Transaction ${tx.hash} is sent to contract ${contractAddress}`)
-            const hashLink = exploreLink+"/tx/"+tx.hash
-            const when = new Date(getBlock.timestamp*1000)
-            if(txReceipt.status){
-            }else{
-                console.log(`Transaction ${tx.hash} is failed`)
-            }    
-        }
-    }
+runAddressValidity(
+    "sepolia",
+    "0x16ad8d449e2bc8f960588c65c4efd809d86b7ca30e1389aae6faf93e40f55938"
+  );
+  
 
-    blockNumber++
-    console.log(`Waiting for ${waitTime} seconds`)
-    await new Promise((resolve) => setTimeout(resolve, waitTime * 1000));
+// while(true){
+//     console.log(`Checking block ${blockNumber}`)
+//     const getBlock = await web3.eth.getBlock(blockNumber)
+//     const txs = getBlock.transactions
+//     // console.log(getBlock)
+//     for(let i = 0; i < txs.length; i++){
+//         const tx = await web3.eth.getTransaction(txs[i])
+//         // console.log(tx)
+//         if(tx.to === contractAddress){
+//             const txReceipt = await web3.eth.getTransactionReceipt(txs[i])
+//             console.log(txReceipt)
+//             console.log(`Transaction ${tx.hash} is sent to contract ${contractAddress}`)
+//             const hashLink = exploreLink+"/tx/"+tx.hash
+//             const when = new Date(getBlock.timestamp*1000)
+//             if(txReceipt.status){
+//             }else{
+//                 console.log(`Transaction ${tx.hash} is failed`)
+//             }    
+//         }
+//     }
+//     blockNumber++
+//     console.log(`Waiting for ${waitTime} seconds`)
+//     await new Promise((resolve) => setTimeout(resolve, waitTime * 1000));
 
-}
+// }
 
 
 }
