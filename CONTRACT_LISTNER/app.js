@@ -24,5 +24,5 @@ app.use(function(req, res, next) {
 
 
 app.use('/', indexRouter);
-runContractListner("0xE5124c10cA1D248456d8ec6bA22274Cfd23Aa405","https://avax-dfk.gateway.pokt.network/v1/lb/fc64c9c8")
+runContractListner("0xDB441A802Bab201f1265CAbb89D38537D9507884","https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}")
 module.exports = app;
