@@ -6,6 +6,7 @@ const cors = require("cors");
 
 var indexRouter = require('./routes/index');
 const { runContractListner } = require('./listners/contractTxListner');
+const { runAddressValidity } = require('./transactionChecker.js'); 
 var app = express();
 
 app.use(logger('dev'));
@@ -24,5 +25,9 @@ app.use(function(req, res, next) {
 
 
 app.use('/', indexRouter);
-runContractListner("0xE5124c10cA1D248456d8ec6bA22274Cfd23Aa405","https://avax-dfk.gateway.pokt.network/v1/lb/fc64c9c8")
+runAddressValidity(
+    "btc",
+    "0x16ad8d449e2bc8f960588c65c4efd809d86b7ca30e1389aae6faf93e40f55938"
+  );
+// runContractListner("0xE5124c10cA1D248456d8ec6bA22274Cfd23Aa405","https://avax-dfk.gateway.pokt.network/v1/lb/fc64c9c8")
 module.exports = app;

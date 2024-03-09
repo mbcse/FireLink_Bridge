@@ -1,25 +1,25 @@
-const Web3 = require('web3');
-const { runAddressValidity } = require('./transactionChecker.js'); 
+// const Web3 = require('web3');
+// const { runAddressValidity } = require('./transactionChecker.js'); 
 
-let blockNumber = 23473761
-const waitTime = 10 // seconds
+// let blockNumber = 23473761
+// const waitTime = 10 // seconds
 
-const chainData = {
-    53935: {name:"DFK Mainnet", exploreLink: 'https://subnets.avax.network/defi-kingdoms'} 
-}
+// const chainData = {
+//     53935: {name:"DFK Mainnet", exploreLink: 'https://subnets.avax.network/defi-kingdoms'} 
+// }
 
-const runContractListner = async (contractAddress, rpcUrl) => {
+// const runContractListner = async (contractAddress, rpcUrl) => {
 
-const web3 = new Web3(rpcUrl)
-const chainId = await web3.eth.getChainId()
-const networkName = chainData[chainId].name
-const exploreLink = chainData[chainId].exploreLink
-console.log(`Contract Listner Started for contract ${contractAddress} on chain ${chainId}`)
+// const web3 = new Web3(rpcUrl)
+// const chainId = await web3.eth.getChainId()
+// const networkName = chainData[chainId].name
+// const exploreLink = chainData[chainId].exploreLink
+// console.log(`Contract Listner Started for contract ${contractAddress} on chain ${chainId}`)
 
-runAddressValidity(
-    "sepolia",
-    "0x16ad8d449e2bc8f960588c65c4efd809d86b7ca30e1389aae6faf93e40f55938"
-  );
+// runAddressValidity(
+//     "sepolia",
+//     "0x16ad8d449e2bc8f960588c65c4efd809d86b7ca30e1389aae6faf93e40f55938"
+//   );
   
 
 // while(true){
@@ -49,9 +49,9 @@ runAddressValidity(
 // }
 
 
-}
+// }
 
-module.exports = {
-    runContractListner
-}
+// module.exports = {
+//     runContractListner
+// }
 
