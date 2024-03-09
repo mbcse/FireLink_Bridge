@@ -5,18 +5,19 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ERC165Checker } from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { SafeCall } from "src/libraries/SafeCall.sol";
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { IFlareRelayer } from "./IFlareRelayer.sol";
+import { FirelinkMintableERC20 } from './FirelinkMintableERC20.sol';
+import { IFirelinkMintableERC20, ILegacyMintableERC20 } from './IFirelinkMintableERC20.sol';
 
 contract FireLinkBridge is Initializable {
     using SafeERC20 for IERC20;
 
     uint32 internal constant RECEIVE_DEFAULT_GAS_LIMIT = 200_000;
 
-    IFlareRealyer public immutable MESSENGER;
+    IFlareRelayer public immutable MESSENGER;
 
-    StandardBridge public immutable OTHER_BRIDGE;
+    FireLinkBridge public immutable OTHER_BRIDGE;
 
 
     address private spacer_0_2_20;
@@ -67,18 +68,18 @@ contract FireLinkBridge is Initializable {
 
     function initialize(address payable _messenger, address payable _otherBridge) public initializer {
         MESSENGER = IFlareRelayer(_messenger);
-        OTHER_BRIDGE = StandardBridge(_otherBridge);
+        OTHER_BRIDGE = FireLinkBridge(_otherBridge);
     }
 
     receive() external payable virtual;
 
 
-    function messenger() external view returns (CrossDomainMessenger) {
+    function messenger() external view returns (IFlareRelayer) {
         return MESSENGER;
     }
 
 
-    function otherBridge() external view returns (StandardBridge) {
+    function otherBridge() external view returns (FireLinkBridge) {
         return OTHER_BRIDGE;
     }
 
@@ -138,10 +139,9 @@ contract FireLinkBridge is Initializable {
         require(msg.value == _amount, "FireLinkBridge: amount sent does not match amount required");
         require(_to != address(this), "FireLinkBridge: cannot send to self");
         require(_to != address(MESSENGER), "FireLinkBridge: cannot send to messenger");
-\
         _emitETHBridgeFinalized(_from, _to, _amount, _extraData);
 
-        bool success = SafeCall.call(_to, gasleft(), _amount, hex"");
+        bool success = call(_to, gasleft(), _amount, hex"");
         require(success, "FireLinkBridge: ETH transfer failed");
     }
 
@@ -157,13 +157,13 @@ contract FireLinkBridge is Initializable {
         onlyOtherBridge
     {
         require(paused() == false, "FireLinkBridge: paused");
-        if (_isOptimismMintableERC20(_localToken)) {
+        if (_isFirelinkMintableERC20(_localToken)) {
             require(
                 _isCorrectTokenPair(_localToken, _remoteToken),
-                "FireLinkBridge: wrong remote token for Optimism Mintable ERC20 local token"
+                "FireLinkBridge: wrong remote token for Firelink Mintable ERC20 local token"
             );
 
-            OptimismMintableERC20(_localToken).mint(_to, _amount);
+            FirelinkMintableERC20(_localToken).mint(_to, _amount);
         } else {
             deposits[_localToken][_remoteToken] = deposits[_localToken][_remoteToken] - _amount;
             IERC20(_localToken).safeTransfer(_to, _amount);
@@ -206,13 +206,13 @@ contract FireLinkBridge is Initializable {
     )
         internal
     {
-        if (_isOptimismMintableERC20(_localToken)) {
+        if (_isFirelinkMintableERC20(_localToken)) {
             require(
                 _isCorrectTokenPair(_localToken, _remoteToken),
-                "FireLinkBridge: wrong remote token for Optimism Mintable ERC20 local token"
+                "FireLinkBridge: wrong remote token for Firelink Mintable ERC20 local token"
             );
 
-            OptimismMintableERC20(_localToken).burn(_from, _amount);
+            FirelinkMintableERC20(_localToken).burn(_from, _amount);
         } else {
             IERC20(_localToken).safeTransferFrom(_from, address(this), _amount);
             deposits[_localToken][_remoteToken] = deposits[_localToken][_remoteToken] + _amount;
@@ -237,16 +237,16 @@ contract FireLinkBridge is Initializable {
     }
 
 
-    function _isOptimismMintableERC20(address _token) internal view returns (bool) {
+    function _isFirelinkMintableERC20(address _token) internal view returns (bool) {
         return ERC165Checker.supportsInterface(_token, type(ILegacyMintableERC20).interfaceId)
-            || ERC165Checker.supportsInterface(_token, type(IOptimismMintableERC20).interfaceId);
+            || ERC165Checker.supportsInterface(_token, type(IFirelinkMintableERC20).interfaceId);
     }
 
     function _isCorrectTokenPair(address _mintableToken, address _otherToken) internal view returns (bool) {
         if (ERC165Checker.supportsInterface(_mintableToken, type(ILegacyMintableERC20).interfaceId)) {
             return _otherToken == ILegacyMintableERC20(_mintableToken).l1Token();
         } else {
-            return _otherToken == IOptimismMintableERC20(_mintableToken).remoteToken();
+            return _otherToken == IFirelinkMintableERC20(_mintableToken).remoteToken();
         }
     }
 
@@ -303,5 +303,22 @@ contract FireLinkBridge is Initializable {
         virtual
     {
         emit ERC20BridgeFinalized(_localToken, _remoteToken, _from, _to, _amount, _extraData);
+    }
+
+    function call(address _target, uint256 _gas, uint256 _value, bytes memory _calldata) internal returns (bool) {
+        bool _success;
+        assembly {
+            _success :=
+                call(
+                    _gas, // gas
+                    _target, // recipient
+                    _value, // ether value
+                    add(_calldata, 32), // inloc
+                    mload(_calldata), // inlen
+                    0, // outloc
+                    0 // outlen
+                )
+        }
+        return _success;
     }
 }
