@@ -7,14 +7,14 @@ import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { SafeCall } from "src/libraries/SafeCall.sol";
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { IFlareRelayer } from "./IFlareRelayer.sol";
 
-
-abstract contract FireLinkBridge is Initializable {
+contract FireLinkBridge is Initializable {
     using SafeERC20 for IERC20;
 
     uint32 internal constant RECEIVE_DEFAULT_GAS_LIMIT = 200_000;
 
-    Realyer public immutable MESSENGER;
+    IFlareRealyer public immutable MESSENGER;
 
     StandardBridge public immutable OTHER_BRIDGE;
 
@@ -65,8 +65,8 @@ abstract contract FireLinkBridge is Initializable {
         _;
     }
 
-    constructor(address payable _messenger, address payable _otherBridge) {
-        MESSENGER = CrossDomainMessenger(_messenger);
+    function initialize(address payable _messenger, address payable _otherBridge) public initializer {
+        MESSENGER = IFlareRelayer(_messenger);
         OTHER_BRIDGE = StandardBridge(_otherBridge);
     }
 
