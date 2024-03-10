@@ -13,4 +13,10 @@ The gateways take a proof which they valdiate before minting the funds in the ch
 The Address of an example ERC20Mintable token (on Coston): 0xb2A0aD1146eC9843908836a2D166D5624AA32471
 
 ## How the Gateways get triggered
+**The code for spinning up a node can be found in the repository. It picks up events, creates an AttestationRequest by calling Flares APIs.
+It then calls the StateConnector contract passing in the attestion Request (it waits for the attestation round to have finished before doing so). 
+Finally the node calls the gateway contract and passes the merkleProof**
+
 Independently ran nodes are repsponsible for calling the flare api's and creating the AttestationRequests and generating te proof which they pass on to the Second chain's gateway contract.
+
+The nodes are reacting to events which the gateway contracts release. The events contain the sending address, receiver address, and amount being burned. 
