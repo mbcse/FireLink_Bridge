@@ -1,3 +1,4 @@
+
 const Web3 = require('web3');
 const fs = require('fs')
 const { runAddressValidity } = require('../attestation/attestRequester')
@@ -85,4 +86,5 @@ async function checkTransactions (txs, ethWeb3, ethContractAddress) {
 module.exports = {
     runContractListner
 }
+
 
