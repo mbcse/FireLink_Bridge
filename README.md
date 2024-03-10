@@ -1,7 +1,9 @@
 # Firelink Bridge
 ## We deployed 2 smart contracts which act as gateways.
 Contract Addresses:
+
 Sepolia 0x68eDBdF3614F802D6fF34a74A3DBF4f97910754a
+
 Coston 0xF6b29cF96471e9bfbBb52623395759CA948f4554
 
 ## Minting and Burning tokens
