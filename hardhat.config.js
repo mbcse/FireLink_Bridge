@@ -134,7 +134,7 @@ module.exports = {
     // },
 
     sepolia :{
-      url: config.NETWORKS.SEPOLIA.RPC_URL || '',
+      url: "https://eth-sepolia.g.alchemy.com/v2/0c2JGynK1Nzrw1LsMD4TzMv-yOPujfdJ",
       accounts: getPrivateKeys(),
       timeout: 0
     },
@@ -218,6 +218,12 @@ module.exports = {
       url: config.NETWORKS.AVALANCHE_TESTNET.RPC_URL || '',
       accounts: getPrivateKeys(),
       timeout: 0,
+    },
+
+    flare_coston: {
+      url: "https://coston-api.flare.network/ext/C/rpc",
+      accounts: getPrivateKeys(),
+      timeout: 0
     },
     
 // **************************** Mainnets ************************************************

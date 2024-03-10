@@ -38,6 +38,7 @@
     "@chainlink/contracts-ccip": "^0.7.6",
     "@connext/interfaces": "^2.0.5",
     "@connext/nxtp-contracts": "^0.2.1-rc.16",
+    "@flarenetwork/flare-periphery-contracts": "^0.1.5",
     "@hyperlane-xyz/core": "^1.5.8",
     "@openzeppelin/contracts": "^4.9.6",
     "@openzeppelin/contracts-upgradeable": "^4.9.3",
