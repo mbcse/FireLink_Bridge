@@ -18,5 +18,6 @@ It then calls the StateConnector contract passing in the attestion Request (it w
 Finally the node calls the gateway contract and passes the merkleProof**
 
 Independently ran nodes are repsponsible for calling the flare api's and creating the AttestationRequests and generating te proof which they pass on to the Second chain's gateway contract.
+In the future we plan to incentivise the nodes to do this by including a small fee payed by the user and contained in their bridging request.
 
 The nodes are reacting to events which the gateway contracts release. The events contain the sending address, receiver address, and amount being burned. 
