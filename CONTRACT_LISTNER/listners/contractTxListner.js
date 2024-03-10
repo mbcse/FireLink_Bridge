@@ -53,12 +53,6 @@ async function checkTransactions (txs, ethWeb3, ethContractAddress) {
             name: 'amount'
         }
     ]
-    // const inputs = [
-    //     {
-    //         type: 'uint',
-    //         name: 'amount'
-    //     }
-    // ]
 
     for(let i = 0; i < txs.length; i++){
         const tx = await ethWeb3.eth.getTransaction(txs[i])
@@ -77,7 +71,7 @@ async function checkTransactions (txs, ethWeb3, ethContractAddress) {
                 console.log("merkle proof ", proof.data.merkleProof);
                 const flareWeb3 = new Web3(flareRpcUrl);
                 const flareContract = new flareWeb3.eth.Contract(abi, flareContractAddress);
-                flareContract.finaliseBridgeAndTransferEth(proof);
+                flareContract.FinalizeBridgeAndReleaseEth(proof);
             });
             console.log(`Transaction ${tx.hash} is sent to contract ${ethContractAddress}`)
             if(txReceipt.status){
