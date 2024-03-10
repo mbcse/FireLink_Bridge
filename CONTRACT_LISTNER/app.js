@@ -26,8 +26,8 @@ app.use(function(req, res, next) {
 
 app.use('/', indexRouter);
 runAddressValidity(
-    "btc",
-    "0x16ad8d449e2bc8f960588c65c4efd809d86b7ca30e1389aae6faf93e40f55938"
+    "eth",
+    "0xaa635eb271a827e1a68825db8404aa81fb03a5e252f01b82c5e22028231aca74"
   );
 // runContractListner("0xE5124c10cA1D248456d8ec6bA22274Cfd23Aa405","https://avax-dfk.gateway.pokt.network/v1/lb/fc64c9c8")
 module.exports = app;

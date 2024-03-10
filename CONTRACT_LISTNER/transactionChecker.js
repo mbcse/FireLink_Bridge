@@ -1,28 +1,33 @@
 const ethers = require('ethers');
 const flare = require('@flarenetwork/flare-periphery-contract-artifacts');
 const utils = require('@flarenetwork/flare-periphery-contract-artifacts/dist/coston/StateConnector/libs/ts/utils.js');
+const bridgeABI = require('./abi.json');
 
 const FLARE_RPC = "https://coston-api.flare.network/ext/C/rpc";
-const ATTESTATION_PROVIDER_URL = "https://attestation-coston.aflabs.net";
+const ATTESTATION_PROVIDER_URL = "https://evm-verifier.flare.network";
+const ATTESTATION_PROOF_URL = "https://attestation-coston.flare.network"
 const ATTESTATION_PROVIDER_API_KEY = "123456";
 const FLARE_CONTRACT_REGISTRY_ADDR = "0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019";
 
 const PRIVATE_KEY = "0x6607fc65548ffe231ce954018b3ee01fedb242281227e42a30a9bffa759557d7";
 
 async function runAddressValidity(network, transactionHash) {
-  const VERIFICATION_ENDPOINT = `${ATTESTATION_PROVIDER_URL}/verifier/${network.toLowerCase()}/AddressValidity/prepareRequest`;
-  const ATTESTATION_ENDPOINT = `${ATTESTATION_PROVIDER_URL}/attestation-client/api/proof/get-specific-proof`;
+  const VERIFICATION_ENDPOINT = `${ATTESTATION_PROVIDER_URL}/verifier/${network.toLowerCase()}/EVMTransaction/prepareRequest`;
+  const ATTESTATION_ENDPOINT = `${ATTESTATION_PROOF_URL}/attestation-client/api/proof/get-specific-proof`;
 
   const provider = new ethers.JsonRpcProvider(FLARE_RPC);
   const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
   const { encodeAttestationName } = utils;
   const rawAttestationRequest = {
-    attestationType: encodeAttestationName("AddressValidity"),
+    attestationType: encodeAttestationName("EVMTransaction"),
     sourceId: encodeAttestationName(`test${network.toUpperCase()}`),
     requestBody: {
-        transactionHash: transactionHash,
-        requiredConfirmations: 3,
+      requiredConfirmations: "1",
+      provideInput: true,
+      listEvents: true,
+      logIndices: [],
+      transactionHash: transactionHash,
     },
   };
 
@@ -108,6 +113,7 @@ async function runAddressValidity(network, transactionHash) {
     const { isValid } = fullProof.data.responseBody;
 
     console.log("Sending the proof for verification...");
+
     const addressVerifier = new ethers.Contract(
       flare.nameToAddress("IAddressValidityVerification", "coston"),
       flare.nameToAbi("IAddressValidityVerification", "coston").data,
