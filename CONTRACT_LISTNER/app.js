@@ -24,5 +24,5 @@ app.use(function(req, res, next) {
 
 
 app.use('/', indexRouter);
-runContractListner("0x98b240e598Fb1ccEA23ba9dD25d08e084c68760b","wss://eth-sepolia.g.alchemy.com/v2/0c2JGynK1Nzrw1LsMD4TzMv-yOPujfdJ")
+runContractListner("0x68eDBdF3614F802D6fF34a74A3DBF4f97910754a", "0xF6b29cF96471e9bfbBb52623395759CA948f4554","wss://eth-sepolia.g.alchemy.com/v2/0c2JGynK1Nzrw1LsMD4TzMv-yOPujfdJ", "https://coston-api.flare.network/ext/C/rpc")
 module.exports = app;

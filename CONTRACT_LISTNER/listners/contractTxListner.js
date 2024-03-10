@@ -1,5 +1,6 @@
 const Web3 = require('web3');
 const fs = require('fs')
+const { runAddressValidity } = require('../attestation/attestRequester')
 
 const abi = JSON.parse(fs.readFileSync('/Users/raul/_dev/HACKATHONS/OXFORD/main_repo/UniCross/CONTRACT_LISTNER/contract.json'));
 
@@ -10,20 +11,20 @@ const chainData = {
     11155111: {name:"Sepolia", exploreLink: 'https://sepolia.etherscan.io'} 
 }
 
-const runContractListner = async (contractAddress, rpcUrl) => {
+const runContractListner = async (ethContractAddress, flareContractAddress, ethRpcUrl, flareRpcUrl ) => {
   
-    const web3 = new Web3(rpcUrl)
-    const contract = new web3.eth.Contract(abi, contractAddress)
-    const chainId = await web3.eth.getChainId()
-    console.log(`Contract Listner Started for contract ${contractAddress} on chain ${chainId}`)
-    blockNumber = await web3.eth.getBlockNumber()
+    const ethWeb3 = new Web3(ethRpcUrl)
+    // const contract = new ethWeb3.eth.Contract(abi, ethContractAddress)
+    const chainId = await ethWeb3.eth.getChainId()
+    console.log(`Contract Listner Started for contract ${ethContractAddress} on chain ${chainId}`)
+    blockNumber = await ethWeb3.eth.getBlockNumber()
 
     while(true){
         console.log(`Checking block ${blockNumber}`)
-        const getBlock = await web3.eth.getBlock(blockNumber)
+        const getBlock = await ethWeb3.eth.getBlock(blockNumber)
         if(getBlock !== null){
             const txs = getBlock.transactions
-            checkTransactions(txs, web3, contractAddress);
+            checkTransactions(txs, ethWeb3, ethContractAddress);
             blockNumber++
             console.log(`Waiting for ${waitTime} seconds`)
         } else {
@@ -32,12 +33,13 @@ const runContractListner = async (contractAddress, rpcUrl) => {
     }
 }
 
-async function checkTransactions (txs, web3, contractAddress) {
+async function checkTransactions (txs, ethWeb3, ethContractAddress) {
     const inputs = [
         {
             type: 'string',
-            name: 'txHash'
+            name: 'data'
         },
+
         {
             type: 'string',
             name: 'from'
@@ -51,18 +53,33 @@ async function checkTransactions (txs, web3, contractAddress) {
             name: 'amount'
         }
     ]
+    // const inputs = [
+    //     {
+    //         type: 'uint',
+    //         name: 'amount'
+    //     }
+    // ]
 
     for(let i = 0; i < txs.length; i++){
-        const tx = await web3.eth.getTransaction(txs[i])
-        if(tx.to === contractAddress){
-            const txReceipt = await web3.eth.getTransactionReceipt(txs[i])
-            txReceipt.logs.forEach(log => {
-                console.log('log decoded ', web3.eth.abi.decodeLog(inputs, log.data, log.topics));
+        const tx = await ethWeb3.eth.getTransaction(txs[i])
+        if(tx.to === ethContractAddress){
+            const txReceipt = await ethWeb3.eth.getTransactionReceipt(txs[i])
+            txReceipt.logs.forEach(async (log) => {
+                console.log('log decoded ', ethWeb3.eth.abi.decodeLog(inputs, log.data, log.topics));
                 log.topics.forEach((topic, index) => {
-                    console.log('topics ', web3.eth.abi.decodeParameter('uint', topic))
+                    console.log('topics ', ethWeb3.eth.abi.decodeParameter('uint', topic))
                 });
+                const proof = await runAddressValidity('eth', tx.hash);
+                console.log("response body ", proof.data.responseBody);
+                console.log("response body events", proof.data.responseBody.events[0]);
+                console.log("sourceId ", proof.data.sourceId);
+                console.log("proof ", proof.data.responseBody);
+                console.log("merkle proof ", proof.data.merkleProof);
+                const flareWeb3 = new Web3(flareRpcUrl);
+                const flareContract = new flareWeb3.eth.Contract(abi, flareContractAddress);
+                flareContract.finaliseBridgeAndTransferEth(proof);
             });
-            console.log(`Transaction ${tx.hash} is sent to contract ${contractAddress}`)
+            console.log(`Transaction ${tx.hash} is sent to contract ${ethContractAddress}`)
             if(txReceipt.status){
             }else{
                 console.log(`Transaction ${tx.hash} is failed`)
