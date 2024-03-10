@@ -15,9 +15,6 @@ const runContractListner = async (contractAddress, rpcUrl) => {
     const web3 = new Web3(rpcUrl)
     const contract = new web3.eth.Contract(abi, contractAddress)
     const chainId = await web3.eth.getChainId()
-    console.log(chainId)
-    // const networkName = chainData[chainId].name
-    // const exploreLink = chainData[chainId].exploreLink
     console.log(`Contract Listner Started for contract ${contractAddress} on chain ${chainId}`)
     blockNumber = await web3.eth.getBlockNumber()
 
@@ -26,7 +23,6 @@ const runContractListner = async (contractAddress, rpcUrl) => {
         const getBlock = await web3.eth.getBlock(blockNumber)
         if(getBlock !== null){
             const txs = getBlock.transactions
-            console.log(txs.length)
             checkTransactions(txs, web3, contractAddress);
             blockNumber++
             console.log(`Waiting for ${waitTime} seconds`)
@@ -37,12 +33,23 @@ const runContractListner = async (contractAddress, rpcUrl) => {
 }
 
 async function checkTransactions (txs, web3, contractAddress) {
+    const inputs = [
+        {
+            type: 'uint',
+            name: 'amount'
+        }
+    ]
+
     for(let i = 0; i < txs.length; i++){
         const tx = await web3.eth.getTransaction(txs[i])
         if(tx.to === contractAddress){
-            console.log(tx.logs)
             const txReceipt = await web3.eth.getTransactionReceipt(txs[i])
-            console.log(txReceipt)
+            txReceipt.logs.forEach(log => {
+                console.log('log decoded ', web3.eth.abi.decodeLog(inputs, log.data, log.topics));
+                log.topics.forEach((topic, index) => {
+                    console.log('topics ', web3.eth.abi.decodeParameter('uint', topic))
+                });
+            });
             console.log(`Transaction ${tx.hash} is sent to contract ${contractAddress}`)
             if(txReceipt.status){
             }else{
