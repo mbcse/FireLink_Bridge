@@ -1,7 +1,6 @@
 const ethers = require('ethers');
 const flare = require('@flarenetwork/flare-periphery-contract-artifacts');
 const utils = require('@flarenetwork/flare-periphery-contract-artifacts/dist/coston/StateConnector/libs/ts/utils.js');
-const bridgeABI = require('./abi.json');
 
 const FLARE_RPC = "https://coston-api.flare.network/ext/C/rpc";
 const ATTESTATION_PROVIDER_URL = "https://evm-verifier.flare.network";

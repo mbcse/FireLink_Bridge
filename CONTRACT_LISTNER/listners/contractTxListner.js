@@ -1,5 +1,6 @@
 
 const Web3 = require('web3');
+const ethers = require('ethers')
 const fs = require('fs')
 const { runAddressValidity } = require('../attestation/attestRequester')
 
@@ -25,7 +26,7 @@ const runContractListner = async (ethContractAddress, flareContractAddress, ethR
         const getBlock = await ethWeb3.eth.getBlock(blockNumber)
         if(getBlock !== null){
             const txs = getBlock.transactions
-            checkTransactions(txs, ethWeb3, ethContractAddress);
+            checkTransactions(txs, ethWeb3, ethContractAddress, flareContractAddress, flareRpcUrl);
             blockNumber++
             console.log(`Waiting for ${waitTime} seconds`)
         } else {
@@ -34,24 +35,31 @@ const runContractListner = async (ethContractAddress, flareContractAddress, ethR
     }
 }
 
-async function checkTransactions (txs, ethWeb3, ethContractAddress) {
+async function checkTransactions (txs, ethWeb3, ethContractAddress, flareContractAddress, flareRpcUrl) {
     const inputs = [
         {
-            type: 'string',
-            name: 'data'
-        },
-
-        {
-            type: 'string',
-            name: 'from'
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
         },
         {
-            type: 'string',
-            name: 'to'
+            "indexed": true,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
         },
         {
-            type: 'uint',
-            name: 'amount'
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+        },
+        {
+            "indexed": false,
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
         }
     ]
 
@@ -60,10 +68,11 @@ async function checkTransactions (txs, ethWeb3, ethContractAddress) {
         if(tx.to === ethContractAddress){
             const txReceipt = await ethWeb3.eth.getTransactionReceipt(txs[i])
             txReceipt.logs.forEach(async (log) => {
-                console.log('log decoded ', ethWeb3.eth.abi.decodeLog(inputs, log.data, log.topics));
-                log.topics.forEach((topic, index) => {
-                    console.log('topics ', ethWeb3.eth.abi.decodeParameter('uint', topic))
-                });
+
+                try{
+                // const decodedEventDataForRouter = await decodeEventData(abi, { data: log.data, topics: log.topics })
+                // decodedEventDataForRouter.eventName === 'Swapped'
+            //    console.log(decodedEventDataForRouter)
                 const proof = await runAddressValidity('eth', tx.hash);
                 console.log("response body ", proof.data.responseBody);
                 console.log("response body events", proof.data.responseBody.events[0]);
@@ -72,7 +81,12 @@ async function checkTransactions (txs, ethWeb3, ethContractAddress) {
                 console.log("merkle proof ", proof.data.merkleProof);
                 const flareWeb3 = new Web3(flareRpcUrl);
                 const flareContract = new flareWeb3.eth.Contract(abi, flareContractAddress);
-                flareContract.FinalizeBridgeAndReleaseEth(proof);
+                const ctx = await flareContract.methods.FinalizeBridgeAndReleaseEth(proof);
+                console.log(ctx)
+                }catch(err){
+                    console.log(err.message)
+            
+                }
             });
             console.log(`Transaction ${tx.hash} is sent to contract ${ethContractAddress}`)
             if(txReceipt.status){
@@ -82,6 +96,28 @@ async function checkTransactions (txs, ethWeb3, ethContractAddress) {
         }
     }
 }
+
+const decodeEventData = async (abi, event) => {
+    const iface = new ethers.utils.Interface(abi)
+    const eventData = iface.parseLog(event)
+    const parsed = await parseEtherjsLog(eventData)
+    return { eventName: eventData.name, ...parsed }
+  }
+  
+  const parseEtherjsLog = async (parsed) => {
+    const parsedEvent = {}
+    for (let i = 0; i < parsed.args.length; i++) {
+      const input = parsed.eventFragment.inputs[i]
+      let arg = parsed.args[i]
+      if (typeof arg === 'object' && arg._isBigNumber) {
+        arg = arg.toString()
+      }
+      parsedEvent[input.name] = arg
+    }
+    return parsedEvent
+  }
+  
+  
 
 module.exports = {
     runContractListner
