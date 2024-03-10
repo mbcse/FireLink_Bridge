@@ -35,6 +35,18 @@ const runContractListner = async (contractAddress, rpcUrl) => {
 async function checkTransactions (txs, web3, contractAddress) {
     const inputs = [
         {
+            type: 'string',
+            name: 'txHash'
+        },
+        {
+            type: 'string',
+            name: 'from'
+        },
+        {
+            type: 'string',
+            name: 'to'
+        },
+        {
             type: 'uint',
             name: 'amount'
         }
