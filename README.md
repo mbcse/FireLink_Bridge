@@ -9,6 +9,10 @@ Coston 0xF6b29cF96471e9bfbBb52623395759CA948f4554
 ## Minting and Burning tokens
 We created an interface which ERC20 Tokens must implement to be able to be bridged (it allows the gateway contract to mint and burn tokens to prevent penetration tests)
 
+Eth is bridged by locking the funds and minting a wrapped version of eth which the gayeways can mint and burn.
+
+
+
 ### How the gateways work
 The gateways take a proof which they valdiate before minting the funds in the chosen wallet when the Contract on the initial chain was triggererd.
 
